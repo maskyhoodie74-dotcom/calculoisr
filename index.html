@@ -1,327 +1,396 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculadora Masiva de ISR - Nómina Mensual y Quincenal</title>
-    <meta name="description" content="Calcula y analiza el ISR mensual y quincenal de más de 200 personas de forma masiva. Gráficos interactivos de nómina, desglose paso a paso y exportación a Excel." />
-    
-    <!-- Google Fonts: Inter -->
+    <title>NóminaISR Pro — Retenciones SAT 2026</title>
+    <meta name="description" content="Plataforma profesional para el cálculo y análisis masivo de ISR mensual y quincenal. Tablas SAT 2026 oficiales, subsidio para el empleo, exportación a Excel." />
+
+    <!-- Fonts: Plus Jakarta Sans + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    
-    <!-- CSS Estilos Custom -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="style.css" />
 
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- SheetJS (para exportar/importar Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- ApexCharts CDN (para visualizaciones interactivas premium) -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-    <!-- Canvas Confetti CDN (para micro-animaciones divertidas) -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   </head>
+
   <body>
-    <div class="app-container">
-      
-      <!-- Top Header / Navigation -->
-      <header class="main-header">
-        <div class="logo-area">
-          <div class="logo-icon-wrapper">
-            <i data-lucide="calculator" class="logo-icon"></i>
+    <div class="app-shell">
+
+      <!-- ════════════════════════════════════════
+           TOPBAR
+      ════════════════════════════════════════ -->
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="brand-logomark">
+            <i data-lucide="landmark"></i>
           </div>
-          <div class="logo-text">
-            <h1>Cálculo <span class="text-gradient">ISR Dinámico</span></h1>
-            <p>Nómina Mensual & Quincenal SAT 2026 (Con Subsidio del Empleo 2026)</p>
+          <div class="brand-wordmark">
+            <span class="brand-name">NóminaISR <em>Pro</em></span>
+            <span class="brand-tagline">Retenciones · SAT 2026 · México</span>
           </div>
         </div>
-        <div class="header-actions">
-          <button id="theme-toggle" class="btn-icon" aria-label="Cambiar tema">
-            <i data-lucide="moon"></i>
+
+        <div class="topbar-center">
+          <div class="status-pill status-sat">
+            <i data-lucide="shield-check"></i>
+            <span>Tablas SAT 2026 Oficiales</span>
+          </div>
+          <div class="status-pill" id="sync-status-indicator">
+            <i data-lucide="cloud-check" class="sync-icon"></i>
+            <span id="sync-text">Sincronizado</span>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Cambiar tema">
+            <i data-lucide="sun"></i>
           </button>
         </div>
       </header>
 
-      <!-- Dashboard Stats Grid -->
-      <section class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon-wrapper blue">
-            <i data-lucide="users"></i>
+      <!-- ════════════════════════════════════════
+           KPI METRICS BAR
+      ════════════════════════════════════════ -->
+      <div class="metrics-bar">
+
+        <div class="metric-tile">
+          <div class="metric-label">
+            <i data-lucide="users" class="metric-icon"></i>
+            Total Empleados
           </div>
-          <div class="stat-content">
-            <span class="stat-label">Total Empleados</span>
-            <span class="stat-value" id="stat-total-employees">0</span>
-          </div>
+          <span class="metric-value" id="stat-total-employees">0</span>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper green">
-            <i data-lucide="dollar-sign"></i>
+        <div class="metric-sep"></div>
+
+        <div class="metric-tile">
+          <div class="metric-label">
+            <i data-lucide="banknote" class="metric-icon metric-green"></i>
+            Nómina Bruta
           </div>
-          <div class="stat-content">
-            <span class="stat-label">Total Bruto</span>
-            <span class="stat-value" id="stat-total-gross">$0.00</span>
-          </div>
+          <span class="metric-value metric-green" id="stat-total-gross">$0.00</span>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper red">
-            <i data-lucide="percent"></i>
+        <div class="metric-sep"></div>
+
+        <div class="metric-tile">
+          <div class="metric-label">
+            <i data-lucide="receipt-text" class="metric-icon metric-red"></i>
+            ISR Retenido
           </div>
-          <div class="stat-content">
-            <span class="stat-label">Total ISR Retenido</span>
-            <span class="stat-value" id="stat-total-isr">$0.00</span>
-          </div>
+          <span class="metric-value metric-red" id="stat-total-isr">$0.00</span>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper yellow" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning);">
-            <i data-lucide="heart-handshake"></i>
+        <div class="metric-sep"></div>
+
+        <div class="metric-tile">
+          <div class="metric-label">
+            <i data-lucide="heart-handshake" class="metric-icon metric-amber"></i>
+            Subsidio Empleo
           </div>
-          <div class="stat-content">
-            <span class="stat-label">Total Subsidio Aplicado</span>
-            <span class="stat-value" id="stat-total-subsidy">$0.00</span>
-          </div>
+          <span class="metric-value metric-amber" id="stat-total-subsidy">$0.00</span>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon-wrapper indigo">
-            <i data-lucide="wallet"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-label">Total Neto Distribuido</span>
-            <span class="stat-value" id="stat-total-net">$0.00</span>
-          </div>
-        </div>
-      </section>
+        <div class="metric-sep"></div>
 
-      <!-- Interactive Charts Panel -->
-      <section class="charts-dashboard-container glass-card" id="charts-panel">
-        <div class="charts-header">
-          <div class="charts-title">
-            <i data-lucide="pie-chart"></i>
-            <h2>Indicadores y Gráficos Analíticos</h2>
+        <div class="metric-tile metric-tile-featured">
+          <div class="metric-label">
+            <i data-lucide="wallet" class="metric-icon metric-blue"></i>
+            Neto a Distribuir
           </div>
-          <button id="toggle-charts-btn" class="btn btn-secondary btn-sm">
-            <i data-lucide="eye-off"></i> Ocultar Gráficos
-          </button>
+          <span class="metric-value metric-blue metric-lg" id="stat-total-net">$0.00</span>
         </div>
-        <div class="charts-grid-wrapper" id="charts-grid-container">
-          <div class="chart-card">
-            <h3>Distribución Monetaria de Nómina</h3>
-            <div id="payroll-distribution-chart"></div>
-          </div>
-          <div class="chart-card">
-            <h3>Distribución de Empleados por Rango Salarial</h3>
-            <div id="salary-ranges-chart"></div>
-          </div>
-        </div>
-      </section>
 
-      <!-- Main Layout: Form / Controls + Table -->
-      <main class="main-content">
-        
-        <!-- Left Sidebar: Controls & Inputs -->
-        <aside class="sidebar-panels">
-          
-          <!-- Tabbed Operations Card -->
-          <div class="glass-card panel-card">
-            <div class="tabs-header">
-              <button class="tab-btn active" data-tab="single-tab">
-                <i data-lucide="user-plus"></i> Individual
-              </button>
-              <button class="tab-btn" data-tab="bulk-tab">
-                <i data-lucide="file-spreadsheet"></i> Carga Masiva (Excel)
-              </button>
-            </div>
-            
-            <div class="tabs-content">
-              <!-- Single Input Form -->
-              <div class="tab-panel active" id="single-tab">
-                <form id="employee-form" class="form-container">
-                  <div class="form-group">
-                    <label for="emp-name">Nombre Completo</label>
-                    <div class="input-wrapper">
-                      <i data-lucide="user" class="input-icon"></i>
-                      <input type="text" id="emp-name" placeholder="Ej. Juan Pérez" required />
+      </div>
+
+      <!-- ════════════════════════════════════════
+           WORKSPACE
+      ════════════════════════════════════════ -->
+      <main class="workspace">
+
+        <!-- ─── LEFT: INPUT CONTROLS ─── -->
+        <aside class="control-column">
+
+          <div class="ctrl-header">
+            <span class="ctrl-header-label">Registro</span>
+            <span class="ctrl-header-sub">Captura individual o masiva</span>
+          </div>
+
+          <!-- TAB NAVIGATION  (class .tab-btn preserved for app.js) -->
+          <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="single-tab">
+              <i data-lucide="user-plus"></i>
+              <span>Individual</span>
+            </button>
+            <button class="tab-btn" data-tab="bulk-tab">
+              <i data-lucide="table-2"></i>
+              <span>Masivo · Excel</span>
+            </button>
+          </div>
+
+          <!-- TAB PANELS  (class .tab-panel preserved for app.js) -->
+          <div class="tabs-body">
+
+            <!-- INDIVIDUAL FORM -->
+            <div class="tab-panel active" id="single-tab">
+              <form id="employee-form" class="entry-form">
+
+                <div class="field">
+                  <label class="field-label" for="emp-name">Nombre completo</label>
+                  <div class="input-wrap">
+                    <i data-lucide="user" class="input-icon"></i>
+                    <input type="text" id="emp-name" class="field-input" placeholder="Ej. María García López" required />
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label class="field-label" for="emp-period">Periodo</label>
+                    <div class="input-wrap">
+                      <i data-lucide="calendar" class="input-icon"></i>
+                      <select id="emp-period" class="field-input field-select">
+                        <option value="mensual">Mensual</option>
+                        <option value="quincenal">Quincenal</option>
+                      </select>
                     </div>
                   </div>
 
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="emp-period">Periodo de Pago</label>
-                      <div class="input-wrapper">
-                        <i data-lucide="calendar" class="input-icon"></i>
-                        <select id="emp-period">
-                          <option value="mensual">Mensual</option>
-                          <option value="quincenal">Quincenal</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <label for="emp-salary">Sueldo Bruto (MXN)</label>
-                      <div class="input-wrapper">
-                        <i data-lucide="dollar-sign" class="input-icon"></i>
-                        <input type="number" id="emp-salary" step="0.01" min="0.01" placeholder="0.00" required />
-                      </div>
+                  <div class="field">
+                    <label class="field-label" for="emp-salary">Sueldo Bruto MXN</label>
+                    <div class="input-wrap">
+                      <i data-lucide="dollar-sign" class="input-icon"></i>
+                      <input type="number" id="emp-salary" class="field-input field-mono" step="0.01" min="0.01" placeholder="0.00" required />
                     </div>
                   </div>
-
-                  <button type="submit" class="btn btn-primary btn-block">
-                    <i data-lucide="plus"></i> Calcular y Agregar
-                  </button>
-                </form>
-              </div>
-
-              <!-- Bulk Upload Form -->
-              <div class="tab-panel" id="bulk-tab">
-                <div class="bulk-upload-area" id="drop-zone">
-                  <i data-lucide="upload-cloud" class="bulk-icon"></i>
-                  <p>Arrastra aquí tu archivo Excel o haz clic para buscar</p>
-                  <span class="bulk-subtext">Formatos permitidos: .xlsx, .xls, .csv</span>
-                  <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;" />
                 </div>
-                
-                <div class="bulk-instructions">
-                  <h4>Estructura requerida del Excel:</h4>
-                  <ul>
-                    <li><strong>Columna A:</strong> Nombre del Empleado</li>
-                    <li><strong>Columna B:</strong> Sueldo Bruto</li>
-                    <li><strong>Columna C:</strong> Periodo (<em>mensual</em> o <em>quincenal</em>)</li>
-                  </ul>
-                  <button id="download-template-btn" class="btn btn-secondary btn-sm btn-block">
-                    <i data-lucide="download"></i> Descargar Plantilla Excel
-                  </button>
+
+                <button type="submit" class="cta-btn">
+                  <i data-lucide="calculator"></i>
+                  Calcular y Agregar
+                </button>
+
+              </form>
+            </div>
+
+            <!-- BULK EXCEL UPLOAD -->
+            <div class="tab-panel" id="bulk-tab">
+
+              <div class="dropzone" id="drop-zone">
+                <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;" />
+                <div class="dropzone-inner">
+                  <div class="dropzone-icon-wrap">
+                    <i data-lucide="cloud-upload" class="bulk-icon"></i>
+                  </div>
+                  <p class="dropzone-title">Arrastra tu archivo aquí</p>
+                  <p class="dropzone-sub">o haz clic para seleccionar · .xlsx .xls .csv</p>
                 </div>
               </div>
+
+              <div class="schema-guide">
+                <div class="schema-guide-title">
+                  <i data-lucide="layout-list"></i>
+                  Estructura del archivo
+                </div>
+                <div class="schema-cols">
+                  <div class="schema-col-row">
+                    <span class="schema-letter">A</span>
+                    <span class="schema-col-desc">Nombre del Empleado</span>
+                  </div>
+                  <div class="schema-col-row">
+                    <span class="schema-letter">B</span>
+                    <span class="schema-col-desc">Sueldo Bruto (número)</span>
+                  </div>
+                  <div class="schema-col-row">
+                    <span class="schema-letter">C</span>
+                    <span class="schema-col-desc">Periodo — <em>mensual</em> o <em>quincenal</em></span>
+                  </div>
+                </div>
+                <button id="download-template-btn" class="ghost-btn">
+                  <i data-lucide="download"></i>
+                  Descargar plantilla .xlsx
+                </button>
+              </div>
+
+            </div>
+          </div><!-- /tabs-body -->
+
+          <!-- SAT INFO FOOTER -->
+          <div class="sat-footer">
+            <div class="sat-footer-icon">
+              <i data-lucide="shield"></i>
+            </div>
+            <div class="sat-footer-text">
+              <span>Art. 96 LISR · UMA 2026 $115.76/día</span>
+              <span>Subsidio mensual $536.22 · límite $11,492.66</span>
             </div>
           </div>
 
-
-          
         </aside>
 
-        <!-- Right Side: Data Table -->
-        <section class="table-panel glass-card">
-          <div class="table-header-toolbar">
-            <div class="table-title-area">
-              <h2>Lista de Empleados</h2>
-              <span class="badge" id="employees-count-badge">0 registros</span>
-            </div>
-            
-            <div class="table-actions">
-              <div class="search-box">
-                <i data-lucide="search" class="search-icon"></i>
-                <input type="text" id="search-input" placeholder="Buscar por nombre..." />
+        <!-- ─── RIGHT: DATA PANEL ─── -->
+        <div class="data-column">
+
+          <!-- CHARTS -->
+          <section class="charts-dashboard-container card" id="charts-panel">
+            <div class="charts-topbar">
+              <div class="charts-heading">
+                <i data-lucide="bar-chart-3" class="charts-heading-icon"></i>
+                <h2>Distribución de Nómina</h2>
               </div>
-              
-              <select id="filter-period" class="select-filter">
-                <option value="all">Todos los periodos</option>
-                <option value="mensual">Mensual</option>
-                <option value="quincenal">Quincenal</option>
-              </select>
-
-              <button id="export-excel-btn" class="btn btn-success">
-                <i data-lucide="file-text"></i> Exportar a Excel
-              </button>
-
-              <button id="clear-all-btn" class="btn btn-danger-outline">
-                <i data-lucide="trash-2"></i> Limpiar Todo
+              <button id="toggle-charts-btn" class="ghost-btn ghost-sm">
+                <i data-lucide="eye-off"></i>
+                Ocultar gráficos
               </button>
             </div>
-          </div>
-
-          <!-- Responsive Table Container -->
-          <div class="table-wrapper">
-            <table class="employees-table" id="emp-table">
-              <thead>
-                <tr>
-                  <th class="col-name" data-sort="name">
-                    Empleado <i data-lucide="chevrons-up-down" class="sort-icon"></i>
-                  </th>
-                  <th class="col-period" data-sort="period">
-                    Periodo <i data-lucide="chevrons-up-down" class="sort-icon"></i>
-                  </th>
-                  <th class="col-numeric" data-sort="gross">
-                    Sueldo Bruto <i data-lucide="chevrons-up-down" class="sort-icon"></i>
-                  </th>
-                  <th class="col-numeric" data-sort="isr">
-                    ISR Neto Retenido <i data-lucide="chevrons-up-down" class="sort-icon"></i>
-                  </th>
-                  <th class="col-numeric" data-sort="net">
-                    Sueldo Neto <i data-lucide="chevrons-up-down" class="sort-icon"></i>
-                  </th>
-                  <th class="col-actions">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="employees-table-body">
-                <!-- Rows will be injected here by JS -->
-                <tr class="empty-state-row" id="empty-state">
-                  <td colspan="6">
-                    <div class="empty-state">
-                      <i data-lucide="database-backup" class="empty-icon"></i>
-                      <h3>No hay registros</h3>
-                      <p>Agrega empleados individualmente, sube un Excel o haz clic en cualquier fila para ver el desglose matemático detallado.</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <!-- Pagination / Info Footer -->
-          <div class="table-footer">
-            <span class="showing-text" id="showing-text">Mostrando 0 de 0 registros</span>
-            <div class="sync-status" id="sync-status-indicator">
-              <i data-lucide="cloud-check" class="sync-icon"></i>
-              <span id="sync-text">Sincronizado con Supabase</span>
+            <div class="charts-grid-wrapper" id="charts-grid-container">
+              <div class="chart-cell">
+                <h3 class="chart-cell-title">Distribución Monetaria</h3>
+                <div id="payroll-distribution-chart"></div>
+              </div>
+              <div class="chart-cell">
+                <h3 class="chart-cell-title">Rango Salarial de Empleados</h3>
+                <div id="salary-ranges-chart"></div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
+          <!-- DATA TABLE -->
+          <section class="table-card card">
+
+            <!-- TABLE TOOLBAR -->
+            <div class="table-toolbar">
+              <div class="table-toolbar-left">
+                <h2 class="table-heading">Registro de Empleados</h2>
+                <span class="count-badge" id="employees-count-badge">0 registros</span>
+              </div>
+              <div class="table-toolbar-right">
+                <div class="searchbar">
+                  <i data-lucide="search" class="searchbar-icon"></i>
+                  <input type="text" id="search-input" class="searchbar-input" placeholder="Buscar empleado…" />
+                </div>
+                <select id="filter-period" class="filter-sel">
+                  <option value="all">Todos los periodos</option>
+                  <option value="mensual">Mensual</option>
+                  <option value="quincenal">Quincenal</option>
+                </select>
+                <button id="export-excel-btn" class="action-btn action-green">
+                  <i data-lucide="file-spreadsheet"></i>
+                  <span>Exportar Excel</span>
+                </button>
+                <button id="clear-all-btn" class="action-btn action-ghost" title="Limpiar todo">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- TABLE SCROLL WRAPPER -->
+            <div class="table-wrapper">
+              <table class="employees-table" id="emp-table">
+                <thead>
+                  <tr>
+                    <th class="col-name" data-sort="name">
+                      Empleado <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                    </th>
+                    <th class="col-period" data-sort="period">
+                      Periodo <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                    </th>
+                    <th class="col-numeric" data-sort="gross">
+                      Sueldo Bruto <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                    </th>
+                    <th class="col-numeric" data-sort="isr">
+                      ISR Retenido <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                    </th>
+                    <th class="col-numeric" data-sort="net">
+                      Neto <i data-lucide="chevrons-up-down" class="sort-icon"></i>
+                    </th>
+                    <th class="col-actions"></th>
+                  </tr>
+                </thead>
+                <tbody id="employees-table-body">
+                  <tr class="empty-state-row" id="empty-state">
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <div class="empty-icon-wrap">
+                          <i data-lucide="inbox" class="empty-icon"></i>
+                        </div>
+                        <h3>Sin registros</h3>
+                        <p>Agrega empleados individualmente o carga un Excel para comenzar. Haz clic en cualquier fila para ver el desglose fiscal.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- STATUS BAR -->
+            <div class="table-statusbar">
+              <span class="statusbar-count" id="showing-text">Mostrando 0 de 0 registros</span>
+              <div class="sync-status" id="sync-status-indicator">
+                <i data-lucide="cloud-check" class="sync-icon"></i>
+                <span id="sync-text">Sincronizado</span>
+              </div>
+            </div>
+
+          </section>
+
+        </div><!-- /data-column -->
       </main>
-      
-    </div>
+    </div><!-- /app-shell -->
 
-    <!-- Step-by-Step SAT Calculation Detail Modal -->
+    <!-- ════════════════════════════════════════
+         CALCULATION BREAKDOWN MODAL
+    ════════════════════════════════════════ -->
     <div id="calc-modal" class="modal-overlay">
-      <div class="modal-card glass-card">
+      <div class="modal-card card">
+
         <div class="modal-header">
-          <div class="modal-title-wrapper">
-            <i data-lucide="file-text" class="modal-title-icon"></i>
+          <div class="modal-header-left">
+            <div class="modal-icon-badge">
+              <i data-lucide="receipt-text" class="modal-title-icon"></i>
+            </div>
             <div>
-              <h3>Desglose Detallado de Impuestos (SAT)</h3>
-              <p id="modal-employee-subtext">Cálculo de Nómina individual</p>
+              <h3 class="modal-title">Desglose ISR · SAT 2026</h3>
+              <p class="modal-subtitle" id="modal-employee-subtext">Cálculo individual de retención</p>
             </div>
           </div>
-          <button class="modal-close-btn" id="close-modal-btn" aria-label="Cerrar modal">
+          <button class="modal-close-btn" id="close-modal-btn" aria-label="Cerrar">
             <i data-lucide="x"></i>
           </button>
         </div>
-        
+
         <div class="modal-body">
+
+          <!-- Employee identity card -->
           <div class="employee-header-card">
-            <h2 id="modal-employee-name">Juan Pérez</h2>
-            <div class="employee-badges-row">
-              <span class="table-badge mensual" id="modal-employee-period">Mensual</span>
-              <span class="badge" id="modal-salary-type">Sueldo Ordinario</span>
+            <div class="emp-avatar">
+              <i data-lucide="user"></i>
+            </div>
+            <div>
+              <h2 id="modal-employee-name">—</h2>
+              <div class="employee-badges-row">
+                <span class="table-badge mensual" id="modal-employee-period">Mensual</span>
+                <span class="badge" id="modal-salary-type">Sueldo Ordinario</span>
+              </div>
             </div>
           </div>
 
+          <!-- Math Breakdown Sheet -->
           <div class="sat-math-sheet">
+
             <div class="math-line">
-              <span class="math-label">Sueldo Bruto Gravable (Ingreso)</span>
+              <span class="math-label">Sueldo Bruto Gravable</span>
               <span class="math-value highlight-blue" id="desglose-bruto">$0.00</span>
             </div>
+
+            <div class="math-sep-thin"></div>
+
             <div class="math-line operator-line">
               <span class="math-label"><i data-lucide="minus"></i> Límite Inferior del Rango SAT</span>
               <span class="math-value" id="desglose-limite-inferior">$0.00</span>
@@ -346,35 +415,44 @@
               <span class="math-label">= Impuesto de Tarifa (ISR Bruto)</span>
               <span class="math-value bold" id="desglose-isr-tarifa">$0.00</span>
             </div>
+
+            <div class="math-sep-gold"></div>
+
             <div class="math-line operator-line subsidy-math" id="subsidy-modal-row">
-              <span class="math-label"><i data-lucide="heart-handshake"></i> Subsidio para el Empleo (2026)</span>
+              <span class="math-label"><i data-lucide="heart-handshake"></i> Subsidio para el Empleo 2026</span>
               <span class="math-value highlight-green" id="desglose-subsidio">$0.00</span>
             </div>
             <div class="math-line total-final">
-              <span class="math-label">ISR Neto Retenido (Impuesto Final)</span>
+              <span class="math-label">ISR NETO RETENIDO</span>
               <span class="math-value highlight-red" id="desglose-isr-final">$0.00</span>
             </div>
+
+            <div class="math-sep-thick"></div>
+
             <div class="math-line net-final-line">
-              <span class="math-label">Sueldo Neto Recibido (Líquido)</span>
+              <span class="math-label">Sueldo Neto a Pagar</span>
               <span class="math-value highlight-green-solid" id="desglose-neto">$0.00</span>
             </div>
+
           </div>
-          
+
+          <!-- Legal note -->
           <div class="sat-legal-note">
-            <p><strong>Nota Fiscal:</strong> Este cálculo incorpora el subsidio de <strong>2026</strong>, el cual aplica un subsidio de <strong>$536.22 MXN</strong> mensuales para trabajadores que perciben un ingreso menor a <strong>$11,492.66 MXN</strong> mensuales.</p>
+            <p><strong>Nota Fiscal:</strong> El subsidio de <strong>2026</strong> aplica <strong>$536.22 MXN</strong> mensuales para trabajadores con ingresos menores a <strong>$11,492.66 MXN</strong>. Artículo 96 LISR · UMA 2026 $115.76/día.</p>
           </div>
+
         </div>
-        
+
         <div class="modal-footer">
-          <button class="btn btn-secondary btn-block" id="close-modal-footer-btn">Entendido</button>
+          <button class="cta-btn cta-btn-block" id="close-modal-footer-btn">Entendido</button>
         </div>
+
       </div>
     </div>
 
-    <!-- Notification system toast -->
+    <!-- TOAST STACK -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- JS Custom Logic -->
     <script src="app.js"></script>
   </body>
 </html>
