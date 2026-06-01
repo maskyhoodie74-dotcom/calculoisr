@@ -5,56 +5,56 @@
  */
 
 // 1. CONFIGURACIÓN INICIAL & DEFAULTS
-const DEFAULT_SUPABASE_URL = "https://lcthqhqdojebwflqxpjt.supabase.co";
-const DEFAULT_SUPABASE_KEY = "sb_publishable_6VJFF1dI3UwQdzVYbcgiJg_XQv2E-7q";
+const DEFAULT_SUPABASE_URL = "";
+const DEFAULT_SUPABASE_KEY = "";
 
 let supabaseUrl = localStorage.getItem("sb_url") || DEFAULT_SUPABASE_URL;
 let supabaseKey = localStorage.getItem("sb_key") || DEFAULT_SUPABASE_KEY;
 let supabaseClient = null;
 
-// 2. TABLAS DE RETENCIÓN DE ISR (MÉXICO 2024 - OFICIALES SAT)
+// 2. TABLAS DE RETENCIÓN DE ISR (MÉXICO 2026 - OFICIALES SAT)
 // Tabla Mensual
 const ISR_TABLE_MONTHLY = [
-  { limitInferior: 0.01, limitSuperior: 746.04, cuotaFija: 0.00, porcentaje: 1.92 },
-  { limitInferior: 746.05, limitSuperior: 6332.05, cuotaFija: 14.32, porcentaje: 6.40 },
-  { limitInferior: 6332.06, limitSuperior: 11128.01, cuotaFija: 371.83, porcentaje: 10.88 },
-  { limitInferior: 11128.02, limitSuperior: 12935.82, cuotaFija: 893.63, porcentaje: 16.00 },
-  { limitInferior: 12935.83, limitSuperior: 15487.71, cuotaFija: 1182.88, porcentaje: 17.92 },
-  { limitInferior: 15487.72, limitSuperior: 31236.49, cuotaFija: 1640.18, porcentaje: 21.36 },
-  { limitInferior: 31236.50, limitSuperior: 49233.00, cuotaFija: 5004.12, porcentaje: 23.52 },
-  { limitInferior: 49233.01, limitSuperior: 93993.90, cuotaFija: 9236.89, porcentaje: 30.00 },
-  { limitInferior: 93993.91, limitSuperior: 125325.20, cuotaFija: 22665.17, porcentaje: 32.00 },
-  { limitInferior: 125325.21, limitSuperior: 375975.61, cuotaFija: 32691.18, porcentaje: 34.00 },
-  { limitInferior: 375975.62, limitSuperior: Infinity, cuotaFija: 117912.32, porcentaje: 35.00 }
+  { limitInferior: 0.01, limitSuperior: 844.59, cuotaFija: 0.00, porcentaje: 1.92 },
+  { limitInferior: 844.60, limitSuperior: 7168.51, cuotaFija: 16.22, porcentaje: 6.40 },
+  { limitInferior: 7168.52, limitSuperior: 12598.02, cuotaFija: 420.95, porcentaje: 10.88 },
+  { limitInferior: 12598.03, limitSuperior: 14644.64, cuotaFija: 1011.68, porcentaje: 16.00 },
+  { limitInferior: 14644.65, limitSuperior: 17533.64, cuotaFija: 1339.14, porcentaje: 17.92 },
+  { limitInferior: 17533.65, limitSuperior: 35362.83, cuotaFija: 1856.84, porcentaje: 21.36 },
+  { limitInferior: 35362.84, limitSuperior: 55736.68, cuotaFija: 5665.16, porcentaje: 23.52 },
+  { limitInferior: 55736.69, limitSuperior: 106410.50, cuotaFija: 10457.09, porcentaje: 30.00 },
+  { limitInferior: 106410.51, limitSuperior: 141880.66, cuotaFija: 25659.23, porcentaje: 32.00 },
+  { limitInferior: 141880.67, limitSuperior: 425641.99, cuotaFija: 37009.69, porcentaje: 34.00 },
+  { limitInferior: 425642.00, limitSuperior: Infinity, cuotaFija: 133488.54, porcentaje: 35.00 }
 ];
 
 // Tabla Quincenal
 const ISR_TABLE_BIWEEKLY = [
-  { limitInferior: 0.01, limitSuperior: 368.10, cuotaFija: 0.00, porcentaje: 1.92 },
-  { limitInferior: 368.11, limitSuperior: 3124.35, cuotaFija: 7.05, porcentaje: 6.40 },
-  { limitInferior: 3124.36, limitSuperior: 5490.75, cuotaFija: 183.45, porcentaje: 10.88 },
-  { limitInferior: 5490.76, limitSuperior: 6382.80, cuotaFija: 441.00, porcentaje: 16.00 },
-  { limitInferior: 6382.81, limitSuperior: 7641.90, cuotaFija: 583.65, porcentaje: 17.92 },
-  { limitInferior: 7641.91, limitSuperior: 15412.80, cuotaFija: 809.25, porcentaje: 21.36 },
-  { limitInferior: 15412.81, limitSuperior: 24292.65, cuotaFija: 2469.15, porcentaje: 23.52 },
-  { limitInferior: 24292.66, limitSuperior: 46378.50, cuotaFija: 4557.75, porcentaje: 30.00 },
-  { limitInferior: 46378.51, limitSuperior: 61838.10, cuotaFija: 11183.40, porcentaje: 32.00 },
-  { limitInferior: 61838.11, limitSuperior: 185514.30, cuotaFija: 16130.55, porcentaje: 34.00 },
-  { limitInferior: 185514.31, limitSuperior: Infinity, cuotaFija: 58180.35, porcentaje: 35.00 }
+  { limitInferior: 0.01, limitSuperior: 416.70, cuotaFija: 0.00, porcentaje: 1.92 },
+  { limitInferior: 416.71, limitSuperior: 3537.15, cuotaFija: 7.95, porcentaje: 6.40 },
+  { limitInferior: 3537.16, limitSuperior: 6216.15, cuotaFija: 207.75, porcentaje: 10.88 },
+  { limitInferior: 6216.16, limitSuperior: 7225.95, cuotaFija: 499.20, porcentaje: 16.00 },
+  { limitInferior: 7225.96, limitSuperior: 8651.40, cuotaFija: 660.75, porcentaje: 17.92 },
+  { limitInferior: 8651.41, limitSuperior: 17448.75, cuotaFija: 916.20, porcentaje: 21.36 },
+  { limitInferior: 17448.76, limitSuperior: 27501.60, cuotaFija: 2795.25, porcentaje: 23.52 },
+  { limitInferior: 27501.61, limitSuperior: 52505.25, cuotaFija: 5159.70, porcentaje: 30.00 },
+  { limitInferior: 52505.26, limitSuperior: 70006.95, cuotaFija: 12660.75, porcentaje: 32.00 },
+  { limitInferior: 70006.96, limitSuperior: 210020.70, cuotaFija: 18261.30, porcentaje: 34.00 },
+  { limitInferior: 210020.71, limitSuperior: Infinity, cuotaFija: 65866.05, porcentaje: 35.00 }
 ];
 
-// Constantes para el "Subsidio para el Empleo" (Decreto de Mayo 2024)
-// Valor Diario UMA 2024 = $108.57 pesos
-// UMA Mensual = 108.57 * 30.4 = $3,300.53
-// Subsidio mensual = 11.82% de la UMA mensual = $390.12 pesos
-// Límite salarial mensual para calificar = $9,081.00 pesos
-const MONTHLY_UMA_2024 = 3300.53;
-const SUBSIDIO_MENSUAL_2024 = 390.12;
-const LIMITE_SUBSIDIO_MENSUAL = 9081.00;
+// Constantes para el "Subsidio para el Empleo" (Actualizado a 2026)
+// Valor Diario UMA 2026 = $115.76 pesos
+// UMA Mensual 2026 = $3,566.22 pesos
+// Subsidio mensual 2026 = 15.02% de la UMA mensual = $536.22 pesos
+// Límite salarial mensual para calificar = $11,492.66 pesos
+const MONTHLY_UMA_2026 = 3566.22;
+const SUBSIDIO_MENSUAL_2026 = 536.22;
+const LIMITE_SUBSIDIO_MENSUAL = 11492.66;
 
-// Subsidio Quincenal (Exactamente la mitad)
-const SUBSIDIO_QUINCENAL_2024 = 195.06;
-const LIMITE_SUBSIDIO_QUINCENAL = 4540.50;
+// Subsidio Quincenal (Proporcional a 15 días: / 30.4 * 15)
+const SUBSIDIO_QUINCENAL_2026 = 264.58;
+const LIMITE_SUBSIDIO_QUINCENAL = 5670.72;
 
 // 3. ESTADOS DE LA APLICACIÓN (STATE)
 let employees = [];        // Datos en memoria
@@ -181,12 +181,12 @@ function calculateISR(grossSalary, period) {
   let subsidio = 0.00;
   if (period === "mensual") {
     if (salary <= LIMITE_SUBSIDIO_MENSUAL) {
-      subsidio = SUBSIDIO_MENSUAL_2024;
+      subsidio = SUBSIDIO_MENSUAL_2026;
     }
   } else {
     // Quincenal
     if (salary <= LIMITE_SUBSIDIO_QUINCENAL) {
-      subsidio = SUBSIDIO_QUINCENAL_2024;
+      subsidio = SUBSIDIO_QUINCENAL_2026;
     }
   }
 
