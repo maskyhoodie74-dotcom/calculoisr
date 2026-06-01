@@ -5,11 +5,11 @@
  */
 
 // 1. CONFIGURACIÓN INICIAL & DEFAULTS
-const DEFAULT_SUPABASE_URL = "";
-const DEFAULT_SUPABASE_KEY = "";
+const DEFAULT_SUPABASE_URL = "https://lcthqhqdojebwflqxpjt.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_6VJFF1dI3UwQdzVYbcgiJg_XQv2E-7q";
 
-let supabaseUrl = localStorage.getItem("sb_url") || DEFAULT_SUPABASE_URL;
-let supabaseKey = localStorage.getItem("sb_key") || DEFAULT_SUPABASE_KEY;
+let supabaseUrl = DEFAULT_SUPABASE_URL;
+let supabaseKey = DEFAULT_SUPABASE_KEY;
 let supabaseClient = null;
 
 // 2. TABLAS DE RETENCIÓN DE ISR (MÉXICO 2026 - OFICIALES SAT)
@@ -94,12 +94,7 @@ const calcModal = document.getElementById("calc-modal");
 const closeModalBtn = document.getElementById("close-modal-btn");
 const closeModalFooterBtn = document.getElementById("close-modal-footer-btn");
 
-// Configuración Supabase DOM
-const sbConfigCard = document.getElementById("supabase-config-card");
-const sbToggleHeader = document.getElementById("supabase-toggle-header");
-const sbUrlInput = document.getElementById("sb-url");
-const sbKeyInput = document.getElementById("sb-key");
-const saveConfigBtn = document.getElementById("save-config-btn");
+
 
 // Métricas DOM
 const statTotalEmployees = document.getElementById("stat-total-employees");
@@ -140,7 +135,7 @@ function showToast(title, message, type = "info") {
 }
 
 // ==========================================================================
-// CÁLCULO CIENTÍFICO DE ISR Y SUBSIDIO (SAT DECRETO DE MAYO 2024)
+// CÁLCULO CIENTÍFICO DE ISR Y SUBSIDIO (SAT ACTUALIZADO A 2026)
 // ==========================================================================
 function calculateISR(grossSalary, period) {
   const table = period === "quincenal" ? ISR_TABLE_BIWEEKLY : ISR_TABLE_MONTHLY;
@@ -177,7 +172,7 @@ function calculateISR(grossSalary, period) {
   const impuestoMarginal = excedente * (row.porcentaje / 100);
   const isrBruto = impuestoMarginal + row.cuotaFija;
   
-  // 4. Lógica de Subsidio para el Empleo (Decreto Mayo 2024)
+  // 4. Lógica de Subsidio para el Empleo (Actualizado a 2026)
   let subsidio = 0.00;
   if (period === "mensual") {
     if (salary <= LIMITE_SUBSIDIO_MENSUAL) {
@@ -1135,33 +1130,7 @@ function setupEventListeners() {
 
   downloadTemplateBtn.addEventListener("click", downloadTemplateExcel);
 
-  // 5. Configuración Supabase (Desplegable)
-  sbToggleHeader.addEventListener("click", () => {
-    sbConfigCard.classList.toggle("collapsed");
-  });
 
-  // Cargar inputs con la config guardada
-  sbUrlInput.value = supabaseUrl;
-  sbKeyInput.value = supabaseKey;
-
-  saveConfigBtn.addEventListener("click", () => {
-    const url = sbUrlInput.value.trim();
-    const key = sbKeyInput.value.trim();
-
-    if (!url || !key) {
-      showToast("Credenciales Vacías", "Por favor introduce valores de URL y Key válidos.", "warning");
-      return;
-    }
-
-    supabaseUrl = url;
-    supabaseKey = key;
-    localStorage.setItem("sb_url", url);
-    localStorage.setItem("sb_key", key);
-
-    showToast("Configuración Guardada", "Intentando conectar con las nuevas credenciales...", "info");
-    initSupabase();
-    sbConfigCard.classList.add("collapsed");
-  });
 
   // 6. Barra de Búsqueda y Filtros
   searchInput.addEventListener("input", renderTable);
