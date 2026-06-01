@@ -65,8 +65,6 @@ let payrollDistributionChart = null;
 let salaryRangesChart = null;
 
 // 4. ELEMENTOS DEL DOM
-const dbStatusBadge = document.getElementById("db-status-badge");
-const dbStatusText = document.getElementById("db-status-text");
 const themeToggle = document.getElementById("theme-toggle");
 const employeesTableBody = document.getElementById("employees-table-body");
 const emptyStateRow = document.getElementById("empty-state");
@@ -403,15 +401,11 @@ function initSupabase() {
 
 function updateDbStatus(isConnected, text) {
   if (isConnected) {
-    dbStatusBadge.className = "connection-badge status-connected";
-    dbStatusText.textContent = text;
     syncStatusIndicator.className = "sync-status";
-    syncText.textContent = "Sincronizado con Supabase";
+    syncText.textContent = "Conectado a la base de datos";
   } else {
-    dbStatusBadge.className = "connection-badge status-disconnected";
-    dbStatusText.textContent = text;
     syncStatusIndicator.className = "sync-status sync-error";
-    syncText.textContent = "Sin conexión a base de datos (Modo Local)";
+    syncText.textContent = "Error de conexión a la base de datos";
   }
 }
 
