@@ -10,7 +10,7 @@ const DEFAULT_SUPABASE_KEY = "sb_publishable_6VJFF1dI3UwQdzVYbcgiJg_XQv2E-7q";
 
 let supabaseUrl = localStorage.getItem("sb_url") || DEFAULT_SUPABASE_URL;
 let supabaseKey = localStorage.getItem("sb_key") || DEFAULT_SUPABASE_KEY;
-let supabase = null;
+let supabaseClient = null;
 
 // 2. TABLAS DE RETENCIÓN DE ISR (MÉXICO 2024 - OFICIALES SAT)
 // Tabla Mensual
@@ -396,7 +396,7 @@ function initSupabase() {
     }
     
     // Inicializar cliente Supabase desde la CDN
-    supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+    supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
     updateDbStatus(true, "Supabase Conectado");
     loadFromSupabase();
   } catch (error) {
@@ -422,13 +422,13 @@ function updateDbStatus(isConnected, text) {
 
 // Cargar registros desde Supabase
 async function loadFromSupabase() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   
   setSyncState(true, "Cargando datos...");
   injectSkeletons(); // Mostrar efecto de carga en la tabla
   
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("isr_records")
       .select("*")
       .order("created_at", { ascending: false });
@@ -474,11 +474,11 @@ async function loadFromSupabase() {
 
 // Guardar un registro en Supabase
 async function saveToSupabase(employee) {
-  if (!supabase) return null;
+  if (!supabaseClient) return null;
   
   setSyncState(true, "Guardando registro...");
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("isr_records")
       .insert([
         {
@@ -505,7 +505,7 @@ async function saveToSupabase(employee) {
 
 // Guardar masivamente en Supabase (Batch insert de alta velocidad)
 async function saveMultipleToSupabase(list) {
-  if (!supabase || list.length === 0) return;
+  if (!supabaseClient || list.length === 0) return;
   
   setSyncState(true, `Guardando ${list.length} registros...`);
   try {
@@ -520,7 +520,7 @@ async function saveMultipleToSupabase(list) {
         net_salary: item.net
       }));
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from("isr_records")
         .insert(batch);
 
@@ -537,11 +537,11 @@ async function saveMultipleToSupabase(list) {
 
 // Eliminar un registro en Supabase
 async function deleteFromSupabase(id) {
-  if (!supabase || !id) return;
+  if (!supabaseClient || !id) return;
   
   setSyncState(true, "Eliminando registro...");
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from("isr_records")
       .delete()
       .eq("id", id);
@@ -557,12 +557,12 @@ async function deleteFromSupabase(id) {
 
 // Vaciar la tabla en Supabase
 async function clearAllFromSupabase() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   
   setSyncState(true, "Limpiando base de datos...");
   try {
     // Eliminación segura de toda la tabla
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from("isr_records")
       .delete()
       .neq("name", "N/A"); // Elimina todo
@@ -817,7 +817,7 @@ async function addEmployee(name, period, grossSalary) {
   updateChartsData();
 
   // Guardar en Supabase
-  if (supabase) {
+  if (supabaseClient) {
     const realId = await saveToSupabase(newEmployee);
     if (realId) {
       newEmployee.id = realId;
@@ -936,7 +936,7 @@ function handleExcelImport(file) {
       showToast("Carga Masiva Exitosa", `Se procesaron ${listToInsert.length} empleados correctamente. (Omitidos: ${skippedCount})`, "success");
       
       // Guardar en Supabase
-      if (supabase) {
+      if (supabaseClient) {
         await saveMultipleToSupabase(listToInsert);
         // Recargar datos oficiales para tener los IDs reales de Supabase
         await loadFromSupabase();
@@ -1181,7 +1181,7 @@ function setupEventListeners() {
     updateDashboardMetrics();
     updateChartsData();
 
-    if (supabase) {
+    if (supabaseClient) {
       await clearAllFromSupabase();
     }
     
